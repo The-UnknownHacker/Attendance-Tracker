@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="jumbotron text-center">
+        <h1 class="display-4">Welcome to the Attendance Tracker</h1>
+        <p class="lead">Effortlessly manage and track attendance for students and teachers.</p>
+        <hr class="my-4">
+        <p>To get started, please log in or register if you don't have an account.</p>
+        <a class="btn btn-primary btn-lg" href="{{ url_for('login') }}" role="button">Login</a>
+        <a class="btn btn-secondary btn-lg" href="{{ url_for('register') }}" role="button">Register</a>
+    </div>
+{% endblock %} 

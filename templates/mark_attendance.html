@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2 class="text-center">Mark Attendance</h2>
+    <form method="POST" class="w-100 w-md-50 mx-auto text-center">
+        {{ form.hidden_tag() }}
+        {{ form.submit(class="btn btn-primary btn-lg btn-block") }}
+    </form>
+{% endblock %} 

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1 class="text-center">Attendance Overview</h1>
+    <div id="attendanceChart" class="my-4"></div>
+    <div class="text-center">
+        <a href="{{ url_for('mark_attendance') }}" class="btn btn-success mb-4 btn-block">Mark Attendance</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script>
+        var options = {
+            chart: {
+                type: 'bar',
+                height: 350,
+                toolbar: {
+                    show: false
+                }
+            },
+            series: [{
+                name: 'Attendance',
+                data: {{ attendance_data | safe }}
+            }],
+            xaxis: {
+                categories: {{ attendance_dates | safe }},
+                labels: {
+                    rotate: -45
+                }
+            },
+            yaxis: {
+                title: {
+                    text: 'Attendance'
+                }
+            },
+            responsive: [{
+                breakpoint: 576,
+                options: {
+                    chart: {
+                        height: 250
+                    },
+                    xaxis: {
+                        labels: {
+                            rotate: 0
+                        }
+                    }
+                }
+            }]
+        };
+
+        var chart = new ApexCharts(document.querySelector("#attendanceChart"), options);
+        chart.render();
+    </script>
+{% endblock %} 

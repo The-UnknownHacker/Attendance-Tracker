@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>{{ student.name }}'s Attendance Details</h1>
+    <p>Email: {{ student.email }}</p>
+    <p>Student ID: {{ student.student_id }}</p>
+    <h2>Attendance Records</h2>
+    <ul>
+        {% for record in attendance_records %}
+        <li>{{ record.date }}: {{ 'Present' if record.present else 'Absent' }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %} 

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2 class="text-center">Add User</h2>
+    <form method="POST" class="w-100 w-md-50 mx-auto">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.name.label }} {{ form.name(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.email.label }} {{ form.email(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.password.label }} {{ form.password(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.confirm_password.label }} {{ form.confirm_password(class="form-control") }}
+        </div>
+        <div class="form-group">
+            <label for="role">Role</label>
+            <select name="role" class="form-control">
+                <option value="student">Student</option>
+                <option value="teacher">Teacher</option>
+            </select>
+        </div>
+        {{ form.submit(class="btn btn-primary btn-block") }}
+    </form>
+{% endblock %} 
