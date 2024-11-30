@@ -20,5 +20,4 @@ class AttendanceForm(FlaskForm):
 class TermDateForm(FlaskForm):
     start_date = DateField('Term Start Date', format='%Y-%m-%d', validators=[DataRequired()])
     end_date = DateField('Term End Date', format='%Y-%m-%d', validators=[DataRequired()])
-    submit = SubmitField('Calculate Attendance')
-  
+    submit = SubmitField('Calculate Attendance') 
