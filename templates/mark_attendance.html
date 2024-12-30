@@ -1,8 +1,40 @@
 {% extends "base.html" %}
 {% block content %}
-    <h2 class="text-center">Mark Attendance</h2>
-    <form method="POST" class="w-100 w-md-50 mx-auto text-center">
-        {{ form.hidden_tag() }}
-        {{ form.submit(class="btn btn-primary btn-lg btn-block") }}
-    </form>
+<div class="attendance-container">
+    <div class="dashboard-card">
+        <div class="text-center mb-4">
+            <div class="card-icon green">
+                <i class="fas fa-clipboard-check"></i>
+            </div>
+            <h2>Mark Today's Attendance</h2>
+            <p class="text-muted">{{ today_date.strftime('%A, %B %d, %Y') }}</p>
+        </div>
+        
+        {% if already_marked %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle mr-2"></i>
+            You have already marked your attendance for today.
+        </div>
+        {% else %}
+        <form method="POST" class="text-center">
+            {{ form.hidden_tag() }}
+            {{ form.submit(class="btn btn-success btn-lg pulse-button") }}
+        </form>
+        {% endif %}
+        
+        <div class="attendance-status mt-4">
+            <p class="mb-2">Current Term's Attendance: 
+                <span class="font-weight-bold">{{ "%.1f"|format(monthly_percentage) }}%</span>
+            </p>
+            <div class="progress">
+                <div class="progress-bar bg-success" role="progressbar" 
+                     style="width: {{ monthly_percentage }}%" 
+                     aria-valuenow="{{ monthly_percentage }}" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %} 

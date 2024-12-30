@@ -1,14 +1,36 @@
 {% extends "base.html" %}
 {% block content %}
-    <h2 class="text-center">Login</h2>
-    <form method="POST" class="w-100 w-md-50 mx-auto">
+<div class="auth-container">
+    <div class="auth-header">
+        <h2>Welcome Back</h2>
+        <p>Please login to your account</p>
+    </div>
+    <form method="POST" class="needs-validation" novalidate>
         {{ form.hidden_tag() }}
         <div class="form-group">
-            {{ form.email.label }} {{ form.email(class="form-control") }}
+            {{ form.email.label(class="form-label") }}
+            {{ form.email(class="form-control", placeholder="Enter your email") }}
+            {% if form.email.errors %}
+                {% for error in form.email.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
         </div>
         <div class="form-group">
-            {{ form.password.label }} {{ form.password(class="form-control") }}
+            {{ form.password.label(class="form-label") }}
+            {{ form.password(class="form-control", placeholder="Enter your password") }}
+            {% if form.password.errors %}
+                {% for error in form.password.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
         </div>
-        {{ form.submit(class="btn btn-primary btn-block") }}
+        {{ form.submit(class="btn btn-primary btn-auth") }}
     </form>
+    <div class="auth-links">
+        <p>Don't have an account? <a href="{{ url_for('register') }}">Sign up</a></p>
+        <p class="mt-2">Are you a teacher? <a href="{{ url_for('teacher_login') }}" class="font-weight-bold">Teacher Login</a></p>
+        <p class="mt-2">Are you an administrator? <a href="{{ url_for('admin_login') }}" class="font-weight-bold">Admin Login</a></p>
+    </div>
+</div>
 {% endblock %} 

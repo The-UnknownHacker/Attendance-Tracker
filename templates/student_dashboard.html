@@ -1,51 +1,204 @@
 {% extends "base.html" %}
 {% block content %}
-    <h1 class="text-center">Attendance Overview</h1>
-    <div id="attendanceChart" class="my-4"></div>
-    <div class="text-center">
-        <a href="{{ url_for('mark_attendance') }}" class="btn btn-success mb-4 btn-block">Mark Attendance</a>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <script>
-        var options = {
-            chart: {
-                type: 'bar',
-                height: 350,
-                toolbar: {
-                    show: false
-                }
-            },
-            series: [{
-                name: 'Attendance',
-                data: {{ attendance_data | safe }}
-            }],
-            xaxis: {
-                categories: {{ attendance_dates | safe }},
-                labels: {
-                    rotate: -45
-                }
-            },
-            yaxis: {
-                title: {
-                    text: 'Attendance'
-                }
-            },
-            responsive: [{
-                breakpoint: 576,
-                options: {
-                    chart: {
-                        height: 250
-                    },
-                    xaxis: {
-                        labels: {
-                            rotate: 0
-                        }
-                    }
-                }
-            }]
-        };
+<div class="dashboard-wrapper">
+    {% if has_data %}
+        <!-- Term Info Card -->
+        <div class="dashboard-card mb-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Current Term</h5>
+                    <p class="h3">Term {{ current_term.term_number }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h5>Term Duration</h5>
+                    <p>{{ current_term.start_date.strftime('%B %d, %Y') }} - {{ current_term.end_date.strftime('%B %d, %Y') }}</p>
+                </div>
+            </div>
+            {% if all_terms|length > 1 %}
+            <div class="mt-3">
+                <form id="termSelectForm" class="form-inline">
+                    <label class="mr-2">View Different Term:</label>
+                    <select class="form-control" id="termSelect">
+                        {% for term in all_terms %}
+                        <option value="{{ term.id }}" {% if term.id == current_term.id %}selected{% endif %}>
+                            Term {{ term.term_number }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+            {% endif %}
+        </div>
 
-        var chart = new ApexCharts(document.querySelector("#attendanceChart"), options);
-        chart.render();
-    </script>
+        <div class="row">
+            <!-- Attendance Summary Card -->
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="dashboard-card">
+                    <div class="card-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h3>Term Attendance</h3>
+                    <div class="dashboard-stats">
+                        {{ attendance_percentage }}%
+                    </div>
+                    <div class="progress mt-2" style="height: 10px;">
+                        <div class="progress-bar {% if attendance_percentage >= 75 %}bg-success
+                                               {% elif attendance_percentage >= 60 %}bg-warning
+                                               {% else %}bg-danger{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ attendance_percentage }}%">
+                        </div>
+                    </div>
+                    <p class="text-muted mt-2">Overall Attendance Rate</p>
+                </div>
+            </div>
+
+            <!-- Present Days Card -->
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="dashboard-card">
+                    <div class="card-icon green">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3>Present Days</h3>
+                    <div class="dashboard-stats">
+                        {{ present_days }}
+                    </div>
+                    <p class="text-muted">Out of {{ total_days }} School Days So Far</p>
+                    <small class="text-muted">({{ total_term_days }} total days in term)</small>
+                </div>
+            </div>
+
+            <!-- Absent Days Card -->
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="dashboard-card">
+                    <div class="card-icon red">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <h3>Absent Days</h3>
+                    <div class="dashboard-stats">
+                        {{ total_days - present_days }}
+                    </div>
+                    <p class="text-muted">Days Missed Up To Today</p>
+                    {% if today < current_term.end_date %}
+                    <small class="text-muted">Term ends on {{ current_term.end_date.strftime('%B %d, %Y') }}</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Chart -->
+        <div class="dashboard-card">
+            <h3>Term Attendance History</h3>
+            <div id="attendanceChart"></div>
+        </div>
+
+    {% else %}
+        <div class="alert alert-warning">
+            {{ message }}
+        </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="dashboard-card mt-4">
+        <h3>Quick Actions</h3>
+        <div class="quick-actions">
+            <a href="{{ url_for('mark_attendance') }}" class="btn btn-primary mr-3">
+                <i class="fas fa-check mr-2"></i>Mark Today's Attendance
+            </a>
+            <a href="{{ url_for('download_report') }}" class="btn btn-outline-primary">
+                <i class="fas fa-download mr-2"></i>Download Report
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if has_data %}
+<!-- ApexCharts JS -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var dates = {{ attendance_dates|tojson }};
+    var data = {{ attendance_data|tojson }};
+    
+    var options = {
+        series: [{
+            name: 'Attendance',
+            data: data
+        }],
+        chart: {
+            height: 350,
+            type: 'line',
+            toolbar: {
+                show: false
+            }
+        },
+        stroke: {
+            width: 3,
+            curve: 'straight'
+        },
+        markers: {
+            size: 6,
+            colors: ['#fff'],
+            strokeColors: '#4a90e2',
+            strokeWidth: 2,
+            hover: {
+                size: 8
+            }
+        },
+        xaxis: {
+            categories: dates,
+            labels: {
+                rotate: -45,
+                style: {
+                    fontSize: '12px'
+                }
+            },
+            title: {
+                text: 'Date'
+            }
+        },
+        yaxis: {
+            min: -0.2,
+            max: 1.2,
+            tickAmount: 2,
+            labels: {
+                formatter: function(val) {
+                    return val === 1 ? 'Present' : val === 0 ? 'Absent' : '';
+                }
+            },
+            title: {
+                text: 'Attendance Status'
+            }
+        },
+        tooltip: {
+            custom: function({series, seriesIndex, dataPointIndex}) {
+                var status = series[seriesIndex][dataPointIndex] === 1 ? 'Present' : 'Absent';
+                var date = new Date(dates[dataPointIndex]).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                return '<div class="custom-tooltip">' +
+                    '<span class="date">' + date + '</span><br>' +
+                    '<span class="status ' + status.toLowerCase() + '">' + status + '</span>' +
+                    '</div>';
+            }
+        }
+    };
+
+    var chart = new ApexCharts(document.querySelector("#attendanceChart"), options);
+    chart.render();
+
+    // Handle term selection change
+    const termSelect = document.getElementById('termSelect');
+    if (termSelect) {
+        termSelect.addEventListener('change', function() {
+            window.location.href = '/student_dashboard?term_id=' + this.value;
+        });
+    }
+});
+</script>
+{% endif %}
 {% endblock %} 

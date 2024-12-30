@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Assign Students to Teachers</h2>
+    
+    <form method="POST" class="mb-4">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="teacher_id"><strong>Select Teacher</strong></label>
+                    <select name="teacher_id" id="teacher_id" class="form-control" required>
+                        <option value="">Choose a teacher...</option>
+                        {% for teacher in teachers %}
+                        <option value="{{ teacher.id }}">{{ teacher.name }} ({{ teacher.email }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group mt-4">
+            <label><strong>Select Students</strong></label>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Select</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Current Teacher</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" 
+                                           class="custom-control-input" 
+                                           id="student_{{ student.id }}"
+                                           name="student_ids" 
+                                           value="{{ student.id }}">
+                                    <label class="custom-control-label" for="student_{{ student.id }}"></label>
+                                </div>
+                            </td>
+                            <td>{{ student.name }}</td>
+                            <td>{{ student.email }}</td>
+                            <td>
+                                {% if student.id in current_assignments %}
+                                    {% for teacher in teachers %}
+                                        {% if teacher.id == current_assignments[student.id] %}
+                                            {{ teacher.name }}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted">Not assigned</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save mr-2"></i>Save Assignments
+        </button>
+    </form>
+</div>
+
+<script>
+document.getElementById('teacher_id').addEventListener('change', function() {
+    var checkboxes = document.querySelectorAll('input[name="student_ids"]');
+    checkboxes.forEach(function(checkbox) {
+        checkbox.checked = false;
+    });
+});
+</script>
+{% endblock %} 

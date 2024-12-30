@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Term Settings</h2>
+
+    <!-- Class Code Section -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">Class Code</h3>
+            <form method="POST" action="{{ url_for('regenerate_class_code') }}" class="d-inline">
+                <button type="submit" class="btn btn-warning">
+                    <i class="fas fa-sync-alt mr-2"></i>Regenerate Code
+                </button>
+            </form>
+        </div>
+        <div class="card-body">
+            <p>Share this code with your students to let them join your class:</p>
+            <div class="alert alert-info">
+                <h4 class="alert-heading mb-0">{{ current_user.class_code }}</h4>
+            </div>
+            <small class="text-muted">Note: Regenerating the code will not affect existing students.</small>
+        </div>
+    </div>
+
+    <!-- Term Settings -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="mb-0">Terms</h3>
+        </div>
+        <div class="card-body">
+            {% if terms %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Term Number</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for term in terms %}
+                        <tr>
+                            <td>{{ term.term_number }}</td>
+                            <td>{{ term.start_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ term.end_date.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                {% if term.is_current %}
+                                <span class="badge badge-success">Current</span>
+                                {% else %}
+                                <span class="badge badge-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" 
+                                    data-toggle="modal" 
+                                    data-target="#editTermModal"
+                                    data-term-id="{{ term.id }}"
+                                    data-term-number="{{ term.term_number }}"
+                                    data-start-date="{{ term.start_date.strftime('%Y-%m-%d') }}"
+                                    data-end-date="{{ term.end_date.strftime('%Y-%m-%d') }}"
+                                    data-is-current="{{ '1' if term.is_current else '0' }}">
+                                    <i class="fas fa-edit mr-1"></i>Edit
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No terms configured yet.</p>
+            {% endif %}
+
+            <button class="btn btn-primary mt-3" data-toggle="modal" data-target="#addTermModal">
+                <i class="fas fa-plus mr-2"></i>Add New Term
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Term Modal -->
+<div class="modal fade" id="addTermModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Term</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form method="POST">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Term Number</label>
+                        <input type="number" name="term_number" class="form-control" required min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" name="start_date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" name="end_date" class="form-control" required>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="is_current" class="form-check-input" id="is_current">
+                        <label class="form-check-label" for="is_current">Set as Current Term</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Term</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Term Modal -->
+<div class="modal fade" id="editTermModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Term</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form method="POST">
+                <input type="hidden" name="term_id" id="edit_term_id">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Term Number</label>
+                        <input type="number" name="term_number" id="edit_term_number" class="form-control" required min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" name="start_date" id="edit_start_date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" name="end_date" id="edit_end_date" class="form-control" required>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="is_current" class="form-check-input" id="edit_is_current">
+                        <label class="form-check-label" for="edit_is_current">Set as Current Term</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle edit term modal
+    var editTermModal = document.getElementById('editTermModal');
+    editTermModal.addEventListener('show.bs.modal', function(event) {
+        // Get the button that triggered the modal
+        var button = event.relatedTarget;
+        
+        // Extract data attributes
+        var termId = button.getAttribute('data-term-id');
+        var termNumber = button.getAttribute('data-term-number');
+        var startDate = button.getAttribute('data-start-date');
+        var endDate = button.getAttribute('data-end-date');
+        var isCurrent = button.getAttribute('data-is-current') === '1';
+
+        console.log('Term Data:', {
+            termId: termId,
+            termNumber: termNumber,
+            startDate: startDate,
+            endDate: endDate,
+            isCurrent: isCurrent
+        });
+
+        // Set form values
+        document.getElementById('edit_term_id').value = termId;
+        document.getElementById('edit_term_number').value = termNumber;
+        document.getElementById('edit_start_date').value = startDate;
+        document.getElementById('edit_end_date').value = endDate;
+        document.getElementById('edit_is_current').checked = isCurrent;
+    });
+
+    // Add error handling
+    editTermModal.addEventListener('error', function(event) {
+        console.error('Modal Error:', event);
+    });
+});
+</script>
+{% endblock %} 

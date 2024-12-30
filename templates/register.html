@@ -1,20 +1,103 @@
 {% extends "base.html" %}
 {% block content %}
-    <h2 class="text-center">Register</h2>
-    <form method="POST" class="w-100 w-md-50 mx-auto">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-            {{ form.name.label }} {{ form.name(class="form-control") }}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="auth-container">
+                <div class="auth-header">
+                    <h2>Register</h2>
+                    <p>Create your account</p>
+                </div>
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ form.name.label(class="form-control-label") }}
+                        {% if form.name.errors %}
+                            {{ form.name(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.name.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.name(class="form-control") }}
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.email.label(class="form-control-label") }}
+                        {% if form.email.errors %}
+                            {{ form.email(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.email.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.email(class="form-control") }}
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.password.label(class="form-control-label") }}
+                        {% if form.password.errors %}
+                            {{ form.password(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.password.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.password(class="form-control") }}
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.confirm_password.label(class="form-control-label") }}
+                        {% if form.confirm_password.errors %}
+                            {{ form.confirm_password(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.confirm_password.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.confirm_password(class="form-control") }}
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.registration_code.label(class="form-label") }}
+                        {{ form.registration_code(class="form-control", placeholder="Enter your teacher's class code") }}
+                        {% if form.registration_code.errors %}
+                            {% for error in form.registration_code.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                        <small class="form-text text-muted">Ask your teacher for their class code</small>
+                    </div>
+                    <div class="form-group">
+                        {{ form.submit(class="btn btn-primary btn-auth") }}
+                    </div>
+                </form>
+                <div class="auth-links">
+                    <small class="text-muted">
+                        Already have an account? <a href="{{ url_for('login') }}">Login</a>
+                    </small>
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            {{ form.email.label }} {{ form.email(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.password.label }} {{ form.password(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.confirm_password.label }} {{ form.confirm_password(class="form-control") }}
-        </div>
-        {{ form.submit(class="btn btn-primary btn-block") }}
-    </form>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        // For debugging
+        console.log('Form submitted');
+        
+        // Get form data
+        const formData = new FormData(form);
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+    });
+});
+</script>
 {% endblock %} 

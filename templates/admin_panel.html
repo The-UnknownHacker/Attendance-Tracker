@@ -1,33 +1,237 @@
 {% extends "base.html" %}
 {% block content %}
-    <h1>Admin Panel</h1>
-    <a href="{{ url_for('add_user') }}" class="btn btn-primary mb-3">Add User</a>
-    <h2>Teachers</h2>
-    <ul class="list-group mb-4">
-        {% for teacher in teachers %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            {{ teacher.name }} - {{ teacher.email }}
-            <span>
-                <a href="{{ url_for('edit_user', user_id=teacher.id) }}" class="btn btn-sm btn-warning">Edit</a>
-                <form action="{{ url_for('delete_user', user_id=teacher.id) }}" method="post" style="display:inline;">
-                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                </form>
-            </span>
-        </li>
-        {% endfor %}
-    </ul>
-    <h2>Students</h2>
-    <ul class="list-group">
-        {% for student in students %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            {{ student.name }} - {{ student.email }}
-            <span>
-                <a href="{{ url_for('edit_user', user_id=student.id) }}" class="btn btn-sm btn-warning">Edit</a>
-                <form action="{{ url_for('delete_user', user_id=student.id) }}" method="post" style="display:inline;">
-                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                </form>
-            </span>
-        </li>
-        {% endfor %}
-    </ul>
+<div class="container">
+    <div class="{% if is_mobile %}mb-3{% else %}d-flex justify-content-between align-items-center mb-4{% endif %}">
+        <h1 class="{% if is_mobile %}mb-3{% endif %}">Admin Dashboard</h1>
+        <div class="{% if is_mobile %}btn-group-vertical w-100{% else %}btn-group{% endif %}">
+            <a href="{{ url_for('add_user') }}" class="btn btn-success {% if is_mobile %}mb-2{% else %}mr-2{% endif %}">
+                <i class="fas fa-user-plus mr-2"></i>Add User
+            </a>
+            <a href="{{ url_for('assign_teacher') }}" class="btn btn-primary">
+                <i class="fas fa-user-plus mr-2"></i>Assign Teachers
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards Row -->
+    <div class="row mb-4">
+        <!-- Users Summary Card -->
+        <div class="{% if is_mobile %}col-12{% else %}col-md-4{% endif %} mb-4">
+            <div class="dashboard-card">
+                <div class="card-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3>Total Users</h3>
+                <div class="dashboard-stats">
+                    {{ total_users }}
+                </div>
+                <div class="stats-breakdown mt-2">
+                    <div class="d-flex justify-content-between">
+                        <span><i class="fas fa-user-graduate text-primary"></i> Students: {{ student_count }}</span>
+                        <span><i class="fas fa-chalkboard-teacher text-success"></i> Teachers: {{ teacher_count }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Activity Card -->
+        <div class="{% if is_mobile %}col-12{% else %}col-md-4{% endif %} mb-4">
+            <div class="dashboard-card">
+                <div class="card-icon orange">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h3>Today's Activity</h3>
+                <div class="recent-activity">
+                    <div class="activity-item">
+                        <i class="fas fa-user-plus text-success"></i>
+                        <span>{{ new_users_today }} new users</span>
+                    </div>
+                    <div class="activity-item">
+                        <i class="fas fa-check text-primary"></i>
+                        <span>{{ attendance_today }} attendance marks</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Stats Card -->
+        <div class="{% if is_mobile %}col-12{% else %}col-md-4{% endif %} mb-4">
+            <div class="dashboard-card">
+                <div class="card-icon green">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>System Stats</h3>
+                <div class="activity-item">
+                    <i class="fas fa-calendar-check text-success"></i>
+                    <span>{{ total_attendance }} total attendance records</span>
+                </div>
+                <div class="activity-item">
+                    <i class="fas fa-percentage text-info"></i>
+                    <span>{{ avg_attendance }}% average attendance</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teachers and Students Section -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="mb-0">Teachers and Their Students</h3>
+        </div>
+        <div class="card-body">
+            {% if teacher_data %}
+                <div class="accordion" id="teacherAccordion">
+                    {% for data in teacher_data %}
+                    <div class="card mb-2">
+                        <div class="card-header" id="heading{{ data.teacher.id }}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <button class="btn btn-link" type="button" data-toggle="collapse" 
+                                            data-target="#collapse{{ data.teacher.id }}">
+                                        {{ data.teacher.name }}
+                                    </button>
+                                </h5>
+                                <div>
+                                    <a href="{{ url_for('reset_password', user_id=data.teacher.id) }}" 
+                                       class="btn btn-warning btn-sm mr-2">
+                                        <i class="fas fa-key mr-1"></i>Reset Password
+                                    </a>
+                                    <span class="badge badge-info mr-2">
+                                        Class Code: {{ data.teacher.class_code or 'Not Set' }}
+                                    </span>
+                                    <span class="badge badge-secondary">
+                                        {{ data.student_count }} Students
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="collapse{{ data.teacher.id }}" class="collapse">
+                            <div class="card-body">
+                                {% if data.students %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Student ID</th>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                                <th>Joined</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for student in data.students %}
+                                            <tr>
+                                                <td>{{ student.student_id }}</td>
+                                                <td>{{ student.name }}</td>
+                                                <td>{{ student.email }}</td>
+                                                <td>{{ student.created_at.strftime('%Y-%m-%d') }}</td>
+                                                <td>
+                                                    <a href="{{ url_for('reset_password', user_id=student.id) }}" 
+                                                       class="btn btn-warning btn-sm">
+                                                        <i class="fas fa-key mr-1"></i>Reset Password
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <p class="text-muted">No students assigned yet.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+            <p class="text-muted">No teachers registered yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.dashboard-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    height: 100%;
+}
+
+.card-icon {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    color: #007bff;
+}
+
+.card-icon.green { color: #28a745; }
+.card-icon.orange { color: #fd7e14; }
+
+.dashboard-stats {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.activity-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-item i {
+    margin-right: 10px;
+}
+
+.stats-breakdown {
+    font-size: 0.9rem;
+}
+
+.stats-breakdown i {
+    margin-right: 5px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .dashboard-card {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .dashboard-stats {
+        font-size: 1.5rem;
+    }
+}
+
+.btn-warning {
+    color: #fff;
+    background-color: #ffc107;
+    border-color: #ffc107;
+}
+
+.btn-warning:hover {
+    color: #fff;
+    background-color: #e0a800;
+    border-color: #d39e00;
+}
+
+form.d-inline {
+    margin: 0;
+    padding: 0;
+}
+
+.mr-2 {
+    margin-right: 0.5rem;
+}
+</style>
 {% endblock %} 

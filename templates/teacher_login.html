@@ -2,14 +2,14 @@
 {% block content %}
 <div class="auth-container">
     <div class="auth-header">
-        <h2>Admin Login</h2>
-        <p>Please login with your administrator credentials</p>
+        <h2>Teacher Login</h2>
+        <p>Please login with your teacher account</p>
     </div>
     <form method="POST" class="needs-validation" novalidate>
         {{ form.hidden_tag() }}
         <div class="form-group">
             {{ form.email.label(class="form-label") }}
-            {{ form.email(class="form-control", placeholder="Enter admin email") }}
+            {{ form.email(class="form-control", placeholder="Enter your email") }}
             {% if form.email.errors %}
                 {% for error in form.email.errors %}
                     <div class="invalid-feedback d-block">{{ error }}</div>
@@ -18,7 +18,7 @@
         </div>
         <div class="form-group">
             {{ form.password.label(class="form-label") }}
-            {{ form.password(class="form-control", placeholder="Enter admin password") }}
+            {{ form.password(class="form-control", placeholder="Enter your password") }}
             {% if form.password.errors %}
                 {% for error in form.password.errors %}
                     <div class="invalid-feedback d-block">{{ error }}</div>
@@ -28,7 +28,8 @@
         {{ form.submit(class="btn btn-primary btn-auth") }}
     </form>
     <div class="auth-links">
-        <p>Not an administrator? <a href="{{ url_for('login') }}">Regular Login</a></p>
+        <p>Don't have a teacher account? <a href="{{ url_for('teacher_register') }}" class="font-weight-bold">Sign Up with Teacher Code</a></p>
+        <p class="mt-2">Not a teacher? <a href="{{ url_for('login') }}">Regular Login</a></p>
     </div>
 </div>
 {% endblock %} 
